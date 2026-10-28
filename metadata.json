@@ -1,0 +1,6 @@
+{
+  "name": "ArenaX Esports - Tournaments & Gaming Platform",
+  "description": "Premier esports tournament management platform for BGMI, Free Fire, and COD Mobile with real-time lobbies, wallet payouts, and admin portal.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

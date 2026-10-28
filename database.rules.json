@@ -1,0 +1,110 @@
+{
+  "rules": {
+    "admins": {
+      "$uid": {
+        ".read": "auth != null && auth.uid === $uid",
+        ".write": "auth != null && auth.uid === $uid && newData.val() === true && !root.child('app_config/adminCreated').exists()"
+      }
+    },
+    "staff": {
+      ".read": "(auth != null && root.child('admins/'+auth.uid).val() === true)",
+      "$uid": {
+        ".read": "auth != null && auth.uid === $uid",
+        ".write": "(auth != null && root.child('admins/'+auth.uid).val() === true)",
+        ".validate": "newData.hasChildren(['name','email','active','permissions'])"
+      }
+    },
+    "app_config": {
+      ".read": true,
+      ".write": "(auth != null && root.child('admins/'+auth.uid).val() === true)"
+    },
+    "esports_games": {
+      ".read": true,
+      ".write": "(auth != null && root.child('admins/'+auth.uid).val() === true)"
+    },
+    "sliders": {
+      ".read": true,
+      ".write": "(auth != null && root.child('admins/'+auth.uid).val() === true)"
+    },
+    "notifications": {
+      ".read": "auth != null",
+      ".write": "(auth != null && root.child('admins/'+auth.uid).val() === true)"
+    },
+    "referralCodes": {
+      "$code": {
+        ".read": "auth != null",
+        ".write": "(auth != null && root.child('admins/'+auth.uid).val() === true) || (auth != null && !data.exists() && newData.val() === auth.uid)",
+        ".validate": "$code.matches(/^[A-Z0-9]{4,10}$/) && newData.isString()"
+      }
+    },
+    "users": {
+      "$uid": {
+        ".read": "(auth != null && root.child('admins/'+auth.uid).val() === true) || (auth != null && auth.uid === $uid)",
+        ".write": "(auth != null && root.child('admins/'+auth.uid).val() === true) || (auth != null && auth.uid === $uid)"
+      }
+    },
+    "tournaments": {
+      ".read": true,
+      "$status": {
+        ".validate": "$status === 'upcoming' || $status === 'ongoing' || $status === 'resulted'",
+        "$key": {
+          ".write": "(auth != null && root.child('admins/'+auth.uid).val() === true) || (auth != null && root.child('staff/'+auth.uid+'/active').val() !== false && root.child('staff/'+auth.uid+'/permissions/matches').val() === true)",
+          ".validate": "newData.hasChildren(['title','entryFee','prizePool','totalSpots','game','time']) && newData.child('entryFee').isNumber() && newData.child('entryFee').val() >= 10",
+          "title": { ".validate": "newData.isString() && newData.val().length > 2" },
+          "entryFee": { ".validate": "newData.isNumber() && newData.val() >= 10 && newData.val() <= 10000" },
+          "prizePool": { ".validate": "newData.isNumber() && newData.val() >= 50" },
+          "totalSpots": { ".validate": "newData.isNumber() && newData.val() >= 2 && newData.val() <= 100" },
+          "game": { ".validate": "newData.isString()" },
+          "time": { ".validate": "newData.isNumber()" },
+          "joined": {
+            ".write": "auth != null && root.child('users/'+auth.uid+'/banned').val() !== true && $status === 'upcoming' && newData.isNumber()",
+            ".validate": "newData.isNumber() && newData.val() >= 0"
+          },
+          "$other": { ".validate": true }
+        }
+      }
+    },
+    "match_rooms": {
+      "$matchId": {
+        ".read": "(auth != null && root.child('admins/'+auth.uid).val() === true) || (auth != null && root.child('match_participants/'+$matchId+'/'+auth.uid).exists())",
+        ".write": "(auth != null && root.child('admins/'+auth.uid).val() === true)"
+      }
+    },
+    "match_participants": {
+      "$matchId": {
+        ".read": "(auth != null && root.child('admins/'+auth.uid).val() === true) || (auth != null && root.child('match_participants/'+$matchId+'/'+auth.uid).exists())",
+        "$uid": {
+          ".read": "(auth != null && auth.uid === $uid)",
+          ".write": "(auth != null && auth.uid === $uid) && root.child('users/'+auth.uid+'/banned').val() !== true && newData.exists()",
+          ".validate": "newData.hasChildren(['ign','gameUid','count'])"
+        }
+      }
+    },
+    "match_results": {
+      "$matchId": {
+        ".read": "auth != null",
+        ".write": "(auth != null && root.child('admins/'+auth.uid).val() === true)"
+      }
+    },
+    "deposits": {
+      ".read": "(auth != null && root.child('admins/'+auth.uid).val() === true)",
+      "$uid": {
+        ".read": "(auth != null && auth.uid === $uid)",
+        "$id": {
+          ".write": "(auth != null && auth.uid === $uid)",
+          ".validate": "newData.hasChildren(['amount','utr','status','createdAt'])"
+        }
+      }
+    },
+    "withdrawals": {
+      ".read": "(auth != null && root.child('admins/'+auth.uid).val() === true)",
+      "$uid": {
+        ".read": "(auth != null && auth.uid === $uid)",
+        "$id": {
+          ".write": "(auth != null && auth.uid === $uid)",
+          ".validate": "newData.hasChildren(['amount','upi','status','createdAt'])"
+        }
+      }
+    }
+  }
+}
